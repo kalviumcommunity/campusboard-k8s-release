@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: campusboard
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: campusboard
+  template:
+    metadata:
+      labels:
+        app: campusboard
+    spec:
+      containers:
+        - name: api
+          image: campusboard-api:ga1
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 5000
+          envFrom:
+            - configMapRef:
+                name: campusboard-config
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 5000
+            initialDelaySeconds: 2
+            periodSeconds: 3
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 5000
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          resources:
+            requests:
+              cpu: 50m
+              memory: 32Mi
+            limits:
+              cpu: 200m
+              memory: 64Mi
