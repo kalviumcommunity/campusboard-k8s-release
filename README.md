@@ -10,7 +10,7 @@ Fork https://github.com/kalviumcommunity/campusboard-k8s-release and clone your 
 git clone https://github.com/YOUR-USERNAME/campusboard-k8s-release.git
 cd campusboard-k8s-release
 git switch -c fix/campusboard-release
-export NS=YOUR_ASSIGNED_NAMESPACE
+export NS=campus 
 kubectl config current-context
 kubectl get namespace "$NS"
 ```
@@ -54,7 +54,7 @@ kubectl -n "$NS" get pods -l app=campusboard -w
 # Delete exactly one pod from assigned namespace only:
 kubectl -n "$NS" delete pod POD_NAME
 ```
-
+campusboard-5d8b954d8d-r4srv   
 Use a separate terminal for observation if helpful. Export NS in every terminal. For failure commands, retain error output as evidence; a failed HTTP request is expected until repair. If multiple available pods exist, exec may select one: final replica evidence comes from get deployment/get pods, not a single response.
 
 ## Evidence and boundaries
