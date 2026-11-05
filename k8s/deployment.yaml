@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: campusboard
 spec:
-  replicas: 1
+  replicas: 3
   selector:
     matchLabels:
       app: campusboard
@@ -21,9 +21,15 @@ spec:
           envFrom:
             - configMapRef:
                 name: campusboard-config
+                env:
+                 - name: DEMO_TOKEN
+                    valueForm:
+                      secretKeyRef:
+                        name: campusboard-secrets
+                        key: DEMO_TOKEN
           readinessProbe:
             httpGet:
-              path: /ready
+              path: /health
               port: 5000
             initialDelaySeconds: 2
             periodSeconds: 3

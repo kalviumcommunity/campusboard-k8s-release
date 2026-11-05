@@ -3,5 +3,5 @@ kind: ConfigMap
 metadata:
   name: campusboard-config
 data:
-  APP_ENV: preview
-  BANNER: Preview Board
+  APP_ENV: campus
+  BANNER: Campus Board
