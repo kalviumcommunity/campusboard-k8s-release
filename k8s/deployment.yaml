@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: campusboard
 spec:
-  replicas: 1
+  replicas: 3
   selector:
     matchLabels:
       app: campusboard
@@ -21,9 +21,15 @@ spec:
           envFrom:
             - configMapRef:
                 name: campusboard-config
+          env:
+            - name: DEMO_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: campusboard-demo
+                  key: DEMO_TOKEN
           readinessProbe:
             httpGet:
-              path: /ready
+              path: /health
               port: 5000
             initialDelaySeconds: 2
             periodSeconds: 3
@@ -35,8 +41,8 @@ spec:
             periodSeconds: 5
           resources:
             requests:
-              cpu: 50m
-              memory: 32Mi
-            limits:
-              cpu: 200m
+              cpu: 100m
               memory: 64Mi
+            limits:
+              cpu: 300m
+              memory: 128Mi
