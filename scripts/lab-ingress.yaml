@@ -1,0 +1,99 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: campusboard-system
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: lab-ingress
+  namespace: campusboard-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: campusboard-lab-ingress
+rules:
+  - apiGroups: [""]
+    resources: [services, endpoints, secrets, nodes]
+    verbs: [get, list, watch]
+  - apiGroups: [discovery.k8s.io]
+    resources: [endpointslices]
+    verbs: [get, list, watch]
+  - apiGroups: [networking.k8s.io]
+    resources: [ingresses, ingressclasses]
+    verbs: [get, list, watch]
+  - apiGroups: [networking.k8s.io]
+    resources: [ingresses/status]
+    verbs: [update]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: campusboard-lab-ingress
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: campusboard-lab-ingress
+subjects:
+  - kind: ServiceAccount
+    name: lab-ingress
+    namespace: campusboard-system
+---
+apiVersion: networking.k8s.io/v1
+kind: IngressClass
+metadata:
+  name: campusboard
+spec:
+  controller: traefik.io/ingress-controller
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lab-ingress
+  namespace: campusboard-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: campusboard-lab-ingress
+  template:
+    metadata:
+      labels:
+        app: campusboard-lab-ingress
+    spec:
+      serviceAccountName: lab-ingress
+      containers:
+        - name: ingress
+          image: traefik:v3.3.6
+          imagePullPolicy: Never
+          args:
+            - --entrypoints.web.address=:8000
+            - --providers.kubernetesingress=true
+            - --providers.kubernetesingress.ingressclass=campusboard
+          ports:
+            - name: web
+              containerPort: 8000
+          readinessProbe:
+            tcpSocket:
+              port: web
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 300m
+              memory: 256Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: lab-ingress
+  namespace: campusboard-system
+spec:
+  selector:
+    app: campusboard-lab-ingress
+  ports:
+    - name: web
+      port: 80
+      targetPort: web
